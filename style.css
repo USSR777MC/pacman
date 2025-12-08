@@ -1,34 +1,30 @@
-/* Basic styling */
 body {
     text-align: center;
     font-family: sans-serif;
 }
 
-/* The game grid container */
 .grid {
-    display: flex; /* Helps arrange the cells */
-    flex-wrap: wrap; /* Wraps cells to the next row */
-    width: 400px; /* Example: 20 cells * 20px/cell */
+    display: flex;
+    flex-wrap: wrap;
+    width: 400px; /* 20 cells * 20px */
     height: 400px;
     margin: 20px auto;
     border: 2px solid black;
 }
 
-/* Individual cell size - adjust based on your grid size */
 .grid div {
     width: 20px;
     height: 20px;
 }
 
-/* Styles for game elements */
 .wall {
     background-color: darkblue;
 }
 
 .pac-dot {
     background-color: white;
-    border-radius: 50%; /* Makes the dot round */
-    margin: 7px; /* Centers the dot within the 20x20 cell */
+    border-radius: 50%;
+    margin: 7px;
     width: 6px;
     height: 6px;
 }
@@ -47,10 +43,26 @@ body {
 }
 
 .ghost {
-    background-color: red; /* Base ghost color */
     border-radius: 50%;
 }
 
-.scared-ghost {
-    background-color: blue; /* Scared mode color */
+.blinky {
+    background-color: red;
 }
+
+.pinky {
+    background-color: pink;
+}
+
+.inky {
+    background-color: cyan;
+}
+
+.clyde {
+    background-color: orange;
+}
+
+.scared-ghost {
+    background-color: blue !important;
+}
+
