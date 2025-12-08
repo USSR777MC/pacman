@@ -1,4 +1,4 @@
-const width = 20;
+const width = 100; // 100 cells per row
 const grid = document.querySelector('.grid');
 const scoreDisplay = document.getElementById('score');
 let squares = [];
