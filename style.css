@@ -1,68 +1,81 @@
+/* Basic page styling */
 body {
     text-align: center;
     font-family: sans-serif;
+    background-color: black;
+    color: white;
+    overflow-x: auto; /* horizontal scrolling if needed */
+    margin: 0;
+    padding: 20px 0;
 }
 
+/* Grid container */
 .grid {
     display: flex;
     flex-wrap: wrap;
-    width: 400px; /* 20 cells * 20px */
-    height: 400px;
-    margin: 20px auto;
-    border: 2px solid black;
+    width: 1600px;  /* 100 cells * 16px */
+    height: 320px;  /* 20 rows * 16px */
+    margin: 0 auto;
+    border: 3px solid darkblue;
+    background-color: black;
 }
 
+/* Individual cell */
 .grid div {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
+    box-sizing: border-box;
 }
 
+/* Maze walls */
 .wall {
     background-color: darkblue;
 }
 
+/* Pac-dots */
 .pac-dot {
     background-color: white;
     border-radius: 50%;
-    margin: 7px;
     width: 6px;
     height: 6px;
+    margin: 5px auto;
 }
 
+/* Power pellets */
 .power-pellet {
     background-color: white;
     border-radius: 50%;
-    margin: 5px;
     width: 10px;
     height: 10px;
+    margin: 3px auto;
 }
 
+/* Pac-Man */
 .pac-man {
     background-color: yellow;
     border-radius: 50%;
 }
 
+/* Ghosts */
 .ghost {
     border-radius: 50%;
 }
 
-.blinky {
-    background-color: red;
-}
+/* Specific ghost colors */
+.blinky { background-color: red; }
+.pinky { background-color: pink; }
+.inky { background-color: cyan; }
+.clyde { background-color: orange; }
 
-.pinky {
-    background-color: pink;
-}
-
-.inky {
-    background-color: cyan;
-}
-
-.clyde {
-    background-color: orange;
-}
-
+/* Scared ghost mode */
 .scared-ghost {
     background-color: blue !important;
 }
+
+/* Score display styling */
+#score {
+    font-weight: bold;
+    font-size: 20px;
+}
+
 
