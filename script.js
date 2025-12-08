@@ -1,97 +1,161 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const width = 20; // 20 cells wide
+const scoreDisplay = document.getElementById('score');
+const grid = document.querySelector('.grid');
+let squares = [];
+let score = 0;
 
-const tileSize = 32;
-const rows = 15;
-const cols = 14;
-
-let pacman = {
-    x: 1,
-    y: 1,
-    dir: { x: 0, y: 0 },
-    nextDir: { x: 0, y: 0 }
-};
-
-// Simple maze: 0 = path, 1 = wall
-const maze = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,1,0,0,0,0,1,0,0,0,1],
-    [1,0,1,0,1,0,1,1,0,1,0,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,0,1,1,1,0,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,0,1,1,1,0,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+// Example map layout (must be an array of length width*width, e.g., 400)
+// 1=wall, 0=dot, 2=ghost lair/no food, 3=power pellet, 4=empty
+const layout = [
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,
+    1,0,1,1,1,0,1,1,0,1,1,0,1,1,0,1,1,1,0,1,
+    1,3,1,1,1,0,1,1,0,1,1,0,1,1,0,1,1,1,3,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+    // ... continue to fill the rest of the 400 cells
 ];
 
-// Draw maze
-function drawMaze() {
-    for(let y=0;y<rows;y++){
-        for(let x=0;x<cols;x++){
-            if(maze[y][x] === 1){
-                ctx.fillStyle = "blue";
-                ctx.fillRect(x*tileSize, y*tileSize, tileSize, tileSize);
-            } else {
-                ctx.fillStyle = "black";
-                ctx.fillRect(x*tileSize, y*tileSize, tileSize, tileSize);
-                // draw dot
-                ctx.fillStyle = "white";
-                ctx.beginPath();
-                ctx.arc(x*tileSize + tileSize/2, y*tileSize + tileSize/2, 4, 0, Math.PI*2);
-                ctx.fill();
-            }
+// Function to draw the board
+function createBoard() {
+    for (let i = 0; i < layout.length; i++) {
+        const square = document.createElement('div');
+        grid.appendChild(square);
+        squares.push(square);
+
+        // Add class based on the layout number
+        if (layout[i] === 1) {
+            square.classList.add('wall');
+        } else if (layout[i] === 0) {
+            square.classList.add('pac-dot');
+        } else if (layout[i] === 3) {
+            square.classList.add('power-pellet');
+        } else if (layout[i] === 2) {
+            square.classList.add('empty');
         }
     }
 }
 
-// Draw Pac-Man
-function drawPacman() {
-    ctx.fillStyle = "yellow";
-    ctx.beginPath();
-    ctx.arc(pacman.x*tileSize + tileSize/2, pacman.y*tileSize + tileSize/2, tileSize/2 - 2, 0, Math.PI*2);
-    ctx.fill();
+createBoard();
+
+let pacmanCurrentIndex = 300; // Example starting position
+
+squares[pacmanCurrentIndex].classList.add('pac-man');
+
+function control(e) {
+    squares[pacmanCurrentIndex].classList.remove('pac-man');
+
+    switch(e.key) {
+        case 'ArrowLeft':
+            // Check if the next space is NOT a wall (1)
+            if (
+                pacmanCurrentIndex % width !== 0 && // Not on the far left edge
+                !squares[pacmanCurrentIndex - 1].classList.contains('wall')
+            ) pacmanCurrentIndex -= 1;
+            break;
+        case 'ArrowRight':
+            if (
+                pacmanCurrentIndex % width < width - 1 && // Not on the far right edge
+                !squares[pacmanCurrentIndex + 1].classList.contains('wall')
+            ) pacmanCurrentIndex += 1;
+            break;
+        // ... add logic for ArrowUp and ArrowDown (checking for index - width and index + width)
+    }
+    
+    squares[pacmanCurrentIndex].classList.add('pac-man');
+    pacDotEaten();
 }
 
-// Update Pac-Man position
-function updatePacman() {
-    // check if nextDir is possible
-    let nx = pacman.x + pacman.nextDir.x;
-    let ny = pacman.y + pacman.nextDir.y;
-    if(maze[ny][nx] === 0){
-        pacman.dir = {...pacman.nextDir};
-    }
+document.addEventListener('keyup', control);
 
-    let newX = pacman.x + pacman.dir.x;
-    let newY = pacman.y + pacman.dir.y;
-    if(maze[newY][newX] === 0){
-        pacman.x = newX;
-        pacman.y = newY;
+// Ghost Class
+class Ghost {
+    constructor(className, startIndex, speed) {
+        this.className = className;
+        this.startIndex = startIndex;
+        this.currentIndex = startIndex;
+        this.speed = speed;
+        this.isScared = false;
+        this.timerId = NaN;
     }
 }
 
-// Key controls
-document.addEventListener("keydown", e=>{
-    switch(e.key){
-        case "ArrowUp": pacman.nextDir = {x:0, y:-1}; break;
-        case "ArrowDown": pacman.nextDir = {x:0, y:1}; break;
-        case "ArrowLeft": pacman.nextDir = {x:-1, y:0}; break;
-        case "ArrowRight": pacman.nextDir = {x:1, y:0}; break;
-    }
+// Create an array of ghosts
+const ghosts = [
+    new Ghost('blinky', 190, 250),
+    // Add more ghosts here: pinky, inky, clyde
+];
+
+// Draw ghosts on the board
+ghosts.forEach(ghost => {
+    squares[ghost.currentIndex].classList.add(ghost.className);
+    squares[ghost.currentIndex].classList.add('ghost');
 });
 
-// Game loop
-function gameLoop() {
-    drawMaze();
-    updatePacman();
-    drawPacman();
-    requestAnimationFrame(gameLoop);
+// Main ghost movement logic
+ghosts.forEach(ghost => moveGhost(ghost));
+
+function moveGhost(ghost) {
+    const directions = [-1, +1, width, -width]; // left, right, down, up
+    let direction = directions[Math.floor(Math.random() * directions.length)];
+
+    ghost.timerId = setInterval(function() {
+        // Ghost can only move if the next square is not a wall (1)
+        if (
+            !squares[ghost.currentIndex + direction].classList.contains('wall') &&
+            !squares[ghost.currentIndex + direction].classList.contains('ghost') // Optional: prevent ghosts from stacking
+        ) {
+            // Remove old ghost appearance
+            squares[ghost.currentIndex].classList.remove(ghost.className, 'ghost', 'scared-ghost');
+            
+            // Move the ghost
+            ghost.currentIndex += direction;
+            
+            // Add new ghost appearance
+            squares[ghost.currentIndex].classList.add(ghost.className, 'ghost');
+
+            // Handle scared mode visuals
+            if (ghost.isScared) {
+                squares[ghost.currentIndex].classList.add('scared-ghost');
+            }
+        } else {
+            // Find a new random direction if the current one is blocked
+            direction = directions[Math.floor(Math.random() * directions.length)];
+        }
+
+        // Check for collisions (win/lose)
+        checkGameOver();
+
+    }, ghost.speed); // Ghost moves every 'speed' milliseconds
 }
 
-gameLoop();
+function checkGameOver() {
+    // Game Over: Pac-Man runs into a non-scared ghost
+    if (
+        squares[pacmanCurrentIndex].classList.contains('ghost') && 
+        !squares[pacmanCurrentIndex].classList.contains('scared-ghost')
+    ) {
+        ghosts.forEach(ghost => clearInterval(ghost.timerId)); // Stop all movement
+        document.removeEventListener('keyup', control);
+        // ... Display "Game Over" message
+    }
+
+    // Eating a Scared Ghost
+    if (
+        squares[pacmanCurrentIndex].classList.contains('scared-ghost')
+    ) {
+        // Find the ghost and send it back to the lair
+        ghosts.find(ghost => ghost.currentIndex === pacmanCurrentIndex).currentIndex = 
+            ghosts.find(ghost => ghost.currentIndex === pacmanCurrentIndex).startIndex;
+        score += 200;
+        scoreDisplay.innerHTML = score;
+        // The ghost will then continue moving from its start index
+    }
+    
+    // Check for Win: All dots have been eaten
+    if (score >= /* Total maximum score */) {
+        // ... Display "You Win" message
+    }
+}
