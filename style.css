@@ -1,12 +1,56 @@
+/* Basic styling */
 body {
-    background: black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+    text-align: center;
+    font-family: sans-serif;
 }
 
-canvas {
-    border: 4px solid yellow;
+/* The game grid container */
+.grid {
+    display: flex; /* Helps arrange the cells */
+    flex-wrap: wrap; /* Wraps cells to the next row */
+    width: 400px; /* Example: 20 cells * 20px/cell */
+    height: 400px;
+    margin: 20px auto;
+    border: 2px solid black;
+}
+
+/* Individual cell size - adjust based on your grid size */
+.grid div {
+    width: 20px;
+    height: 20px;
+}
+
+/* Styles for game elements */
+.wall {
+    background-color: darkblue;
+}
+
+.pac-dot {
+    background-color: white;
+    border-radius: 50%; /* Makes the dot round */
+    margin: 7px; /* Centers the dot within the 20x20 cell */
+    width: 6px;
+    height: 6px;
+}
+
+.power-pellet {
+    background-color: white;
+    border-radius: 50%;
+    margin: 5px;
+    width: 10px;
+    height: 10px;
+}
+
+.pac-man {
+    background-color: yellow;
+    border-radius: 50%;
+}
+
+.ghost {
+    background-color: red; /* Base ghost color */
+    border-radius: 50%;
+}
+
+.scared-ghost {
+    background-color: blue; /* Scared mode color */
 }
