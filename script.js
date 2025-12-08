@@ -4,24 +4,46 @@ const scoreDisplay = document.getElementById('score');
 let squares = [];
 let score = 0;
 
-// Layout: 0=dot, 1=wall, 2=ghost lair, 3=power pellet
+// Fully completed layout for 20x100 board (2000 cells)
+// 0 = pac-dot, 1 = wall, 2 = ghost lair, 3 = power pellet
 const layout = [
-/* Row 0 */ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-/* Row 1 */ 1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,
-/* Row 2 */ 1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,
-/* Row 3 */ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-/* Row 4 */ 1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,
-/* Row 5 */ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-/* Row 6 */ ... continue pattern similar to above rows ...
-/* Rows 9–10: ghost lair */
-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-/* Row 19: all walls */ 1,1,1,...,1 (100 times)
+  // Row 0 (top wall)
+  ...Array(100).fill(1),
+
+  // Row 1 (dots + corner power pellets)
+  3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,
+
+  // Rows 2–8 (walls at edges, dots inside)
+  ...Array(7*100).fill(0).map((v,i)=> (i%100===0 || i%100===99 ? 1 : 0)),
+
+  // Rows 9–10 (ghost lair in columns 45–55)
+  ...Array(100).fill(0).map((v,i)=> {
+    if(i===0 || i===99) return 1; // walls
+    if(i>=45 && i<=55) return 2;  // ghost lair
+    return 0;                     // pac-dot
+  }),
+  ...Array(100).fill(0).map((v,i)=> {
+    if(i===0 || i===99) return 1;
+    if(i>=45 && i<=55) return 2;
+    return 0;
+  }),
+
+  // Rows 11–18 (walls at edges, dots inside)
+  ...Array(8*100).fill(0).map((v,i)=> (i%100===0 || i%100===99 ? 1 : 0)),
+
+  // Row 19 (bottom wall)
+  ...Array(100).fill(1)
 ];
 
-
+// Calculate total points for win condition
+const totalScore = layout.reduce((acc, cell) => {
+    if(cell===0) return acc+1;      // pac-dot
+    if(cell===3) return acc+10;     // power pellet
+    return acc;
+}, 0);
 
 // Create board
-function createBoard() {
+function createBoard(){
     for(let i=0;i<layout.length;i++){
         const square = document.createElement('div');
         grid.appendChild(square);
@@ -35,7 +57,7 @@ function createBoard() {
 createBoard();
 
 // Pac-Man
-let pacmanCurrentIndex = 220;
+let pacmanCurrentIndex = 1050; // center of board
 squares[pacmanCurrentIndex].classList.add('pac-man');
 
 function control(e){
@@ -51,7 +73,7 @@ function control(e){
 
     if(nextIndex>=0 && nextIndex<squares.length &&
        !squares[nextIndex].classList.contains('wall') &&
-       !squares[nextIndex].classList.contains('empty')) {
+       !squares[nextIndex].classList.contains('empty')){
         pacmanCurrentIndex = nextIndex;
     }
 
@@ -60,7 +82,7 @@ function control(e){
 }
 document.addEventListener('keyup', control);
 
-// Eating dots/power-pellets
+// Eating dots and power pellets
 function pacDotEaten(){
     if(squares[pacmanCurrentIndex].classList.contains('pac-dot')){
         squares[pacmanCurrentIndex].classList.remove('pac-dot');
@@ -71,91 +93,82 @@ function pacDotEaten(){
         squares[pacmanCurrentIndex].classList.remove('power-pellet');
         score+=10;
         scoreDisplay.textContent = score;
-        ghosts.forEach(ghost=>ghost.isScared=true);
-        setTimeout(()=>ghosts.forEach(ghost=>ghost.isScared=false),10000);
+        ghosts.forEach(g=>g.isScared=true);
+        setTimeout(()=>ghosts.forEach(g=>g.isScared=false),10000);
     }
-    checkWin();
+
+    if(score>=totalScore){
+        document.removeEventListener('keyup', control);
+        ghosts.forEach(g=>clearInterval(g.timerId));
+        alert("You Win! 🎉");
+    }
 }
 
-// Ghosts
+// Ghost class
 class Ghost{
     constructor(className,startIndex,speed){
-        this.className=className;
-        this.startIndex=startIndex;
-        this.currentIndex=startIndex;
-        this.speed=speed;
-        this.isScared=false;
-        this.canLeaveLair=false;
-        this.timerId=NaN;
+        this.className = className;
+        this.startIndex = startIndex;
+        this.currentIndex = startIndex;
+        this.speed = speed;
+        this.isScared = false;
+        this.canLeaveLair = false;
+        this.timerId = null;
     }
 }
 
-const ghosts=[
-    new Ghost('blinky',182,250),
-    new Ghost('pinky',187,400),
-    new Ghost('inky',192,300),
-    new Ghost('clyde',197,500)
+// Ghosts in lair
+const ghosts = [
+    new Ghost('blinky',1045,250),
+    new Ghost('pinky',1046,400),
+    new Ghost('inky',1047,300),
+    new Ghost('clyde',1048,500)
 ];
 
-// Draw ghosts and release from lair
+// Draw and move ghosts
 ghosts.forEach(ghost=>{
     squares[ghost.currentIndex].classList.add(ghost.className,'ghost');
     setTimeout(()=>ghost.canLeaveLair=true,1000); // 1 sec delay
     moveGhost(ghost);
 });
 
-// Ghost AI
 function moveGhost(ghost){
-    const directions=[-1,+1,-width,+width];
-
-    ghost.timerId=setInterval(()=>{
-        // only allow leaving lair if canLeaveLair=true
+    const directions = [-1,+1,-width,+width];
+    ghost.timerId = setInterval(()=>{
         if(!ghost.canLeaveLair && layout[ghost.currentIndex]!==2) return;
 
-        let direction=directions[Math.floor(Math.random()*directions.length)];
+        let direction = directions[Math.floor(Math.random()*directions.length)];
         const nextIndex = ghost.currentIndex + direction;
 
         if(nextIndex>=0 && nextIndex<squares.length &&
            !squares[nextIndex].classList.contains('wall') &&
-           !squares[nextIndex].classList.contains('ghost')) {
+           !squares[nextIndex].classList.contains('ghost')){
 
             squares[ghost.currentIndex].classList.remove(ghost.className,'ghost','scared-ghost');
-            ghost.currentIndex=nextIndex;
+            ghost.currentIndex = nextIndex;
             squares[ghost.currentIndex].classList.add(ghost.className,'ghost');
             if(ghost.isScared) squares[ghost.currentIndex].classList.add('scared-ghost');
         }
 
         checkGameOver();
-    },ghost.speed);
+    }, ghost.speed);
 }
 
-// Collisions
+// Game over / eating scared ghosts
 function checkGameOver(){
     if(squares[pacmanCurrentIndex].classList.contains('ghost') &&
        !squares[pacmanCurrentIndex].classList.contains('scared-ghost')){
         ghosts.forEach(g=>clearInterval(g.timerId));
-        document.removeEventListener('keyup',control);
-        alert('Game Over!');
+        document.removeEventListener('keyup', control);
+        alert("Game Over 💀");
     }
 
     if(squares[pacmanCurrentIndex].classList.contains('scared-ghost')){
-        const eatenGhost=ghosts.find(g=>g.currentIndex===pacmanCurrentIndex);
+        const eatenGhost = ghosts.find(g=>g.currentIndex===pacmanCurrentIndex);
         if(eatenGhost){
-            squares[eatenGhost.currentIndex].classList.remove(eatenGhost.className,'ghost','scared-ghost');
-            eatenGhost.currentIndex=eatenGhost.startIndex;
-            score+=200;
-            scoreDisplay.textContent=score;
-            squares[eatenGhost.currentIndex].classList.add(eatenGhost.className,'ghost');
+            eatenGhost.currentIndex = eatenGhost.startIndex;
+            score += 200;
+            scoreDisplay.textContent = score;
         }
-    }
-}
-
-// Win condition
-function checkWin(){
-    const totalDots=layout.filter(x=>x===0||x===3).length+layout.filter(x=>x===3).length*10;
-    if(score>=totalDots){
-        ghosts.forEach(g=>clearInterval(g.timerId));
-        document.removeEventListener('keyup',control);
-        alert('You Win!');
     }
 }
